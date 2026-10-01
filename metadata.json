@@ -1,0 +1,6 @@
+{
+  "name": "GIBC V2 Track 01: Foundational LLM Dev Studio",
+  "description": "Complete production-grade PyTorch 50M parameter foundational LLM training, evaluation, and repository scaffold for GIBC V2 Track 01.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

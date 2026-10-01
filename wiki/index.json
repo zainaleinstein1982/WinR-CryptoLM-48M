@@ -1,0 +1,25 @@
+{
+  "pages": [
+    {
+      "id": "solidity-reentrancy",
+      "title": "Solidity Reentrancy Guard & Security",
+      "summary": "Best practices for preventing reentrancy attacks in Solidity smart contracts using state locks and Checks-Effects-Interactions.",
+      "links": ["rust-cryptography", "transformer-architecture"],
+      "source": "Audit Guidelines v1.2"
+    },
+    {
+      "id": "rust-cryptography",
+      "title": "Rust Cryptographic Primitives (sha2)",
+      "summary": "Implementing secure hashing and signature verification in Rust using the sha2 and ed25519-dalek crates.",
+      "links": ["solidity-reentrancy"],
+      "source": "Rust Crypto Docs"
+    },
+    {
+      "id": "transformer-architecture",
+      "title": "Decoder-Only Transformer (CryptoLM-48M)",
+      "summary": "Architecture specification for CryptoLM-48M featuring 12 layers, 768 hidden dimension, RMSNorm, and SwiGLU FFN.",
+      "links": ["solidity-reentrancy", "rust-cryptography"],
+      "source": "GIBC Track 01 Blueprint"
+    }
+  ]
+}

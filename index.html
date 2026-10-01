@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WinR Knowledge Wiki & CryptoLM-48M Chat — GIBC Track 01</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #161922;
+      --panel-hover: #1e2230;
+      --border: #2a2e3d;
+      --border-focus: #3b82f6;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --c-9001: #7c9cff;
+      --c-14001: #22d3ee;
+      --c-37001: #fbbf24;
+      --c-45001: #4ade80;
+      --c-pp50: #f97316;
+      --c-sop: #fb7185;
+    }
+    .s-9001 { color: var(--c-9001); background: rgba(124, 156, 255, 0.1); border-color: rgba(124, 156, 255, 0.3); }
+    .s-14001 { color: var(--c-14001); background: rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.3); }
+    .s-37001 { color: var(--c-37001); background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.3); }
+    .s-45001 { color: var(--c-45001); background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.3); }
+    .s-pp50 { color: var(--c-pp50); background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.3); }
+    .s-sop { color: var(--c-sop); background: rgba(251, 113, 133, 0.1); border-color: rgba(251, 113, 133, 0.3); }
+
+    body { background-color: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    
+    .hl { background: rgba(59, 130, 246, 0.25); color: #93c5fd; padding: 0.1rem 0.3rem; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.4); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
+  </style>
+</head>
+<body class="flex h-screen w-screen overflow-hidden text-sm">
+
+  <!-- LEFT SIDEBAR: Conversations (240px) -->
+  <aside class="w-[240px] bg-[var(--panel)] border-r border-[var(--border)] flex flex-col shrink-0 z-20">
+    <div class="p-3 border-b border-[var(--border)] flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs">W</div>
+        <span class="font-bold text-xs tracking-wide">WinR & CryptoLM</span>
+      </div>
+    </div>
+    <div class="p-3 border-b border-[var(--border)]">
+      <button onclick="createNewChat()" class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center space-x-1.5 transition shadow-sm">
+        <span>+ Percakapan Baru</span>
+      </button>
+    </div>
+    <div id="convList" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+      <!-- Dynamic conversation list -->
+    </div>
+    <div class="p-3 border-t border-[var(--border)] text-[11px] text-[var(--text-muted)] flex items-center justify-between">
+      <span>GIBC V2 Track 01</span>
+      <span class="font-mono bg-[var(--border)] px-1.5 py-0.5 rounded text-[10px]">48.15M</span>
+    </div>
+  </aside>
+
+  <!-- CENTER: Chat Area (1fr) -->
+  <main class="flex-1 flex flex-col h-full bg-[var(--bg)] relative overflow-hidden">
+    <!-- Header -->
+    <header class="px-4 py-3 border-b border-[var(--border)] bg-[var(--panel)] flex items-center justify-between z-10">
+      <div class="flex items-center space-x-3">
+        <h1 id="activeChatTitle" class="font-semibold text-sm">Sesi Konsultasi Standar & Klausul</h1>
+        <span id="qaBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800">165/165 Klausul OK</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="exportJSON()" class="px-2.5 py-1.5 rounded-lg bg-[var(--panel-hover)] hover:bg-[var(--border)] text-xs text-[var(--text-muted)] hover:text-white transition flex items-center space-x-1">
+          <span>📥 Export JSON</span>
+        </button>
+        <button id="kbToggleBtn" onclick="toggleKB()" class="px-2.5 py-1.5 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 text-xs transition flex items-center space-x-1 font-medium">
+          <span>📖 Toggle Wiki (Ctrl+B)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Messages Container -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <!-- Greeting / Empty State -->
+      <div id="emptyChatState" class="h-full flex flex-col items-center justify-center p-6 text-center max-w-xl mx-auto animate-fadeIn">
+        <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mb-4 text-blue-400 font-bold text-xl">W</div>
+        <h2 class="text-xl font-bold mb-2">WinR Knowledge Wiki & CryptoLM-48M</h2>
+        <p class="text-[var(--text-muted)] text-xs mb-6 leading-relaxed">
+          Sistem basis pengetahuan terintegrasi 165 Klausul Standar (ISO 9001, ISO 14001, ISO 37001, ISO 45001, PP 50/2012) dengan mesin inferensi RAG lokal.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
+          <button onclick="sendSampleQuery('Bagaimana klausul 4.1 ISO 9001:2015 mengatur konteks organisasi?')" class="p-3 rounded-xl bg-[var(--panel)] hover:bg-[var(--panel-hover)] border border-[var(--border)] transition">
+            <div class="text-xs font-semibold text-blue-400 mb-0.5">ISO 9001:2015 Konteks Organisasi</div>
+            <div class="text-[11px] text-[var(--text-muted)]">Klausul 4.1 Organisasi dan konteksnya</div>
+          </button>
+          <button onclick="sendSampleQuery('Jelaskan klausul 6.1.1 ISO 14001:2015 manajemen lingkungan.')" class="p-3 rounded-xl bg-[var(--panel)] hover:bg-[var(--panel-hover)] border border-[var(--border)] transition">
+            <div class="text-xs font-semibold text-cyan-400 mb-0.5">ISO 14001:2015 Lingkungan</div>
+            <div class="text-[11px] text-[var(--text-muted)]">Klausul 6.1.1 Tindakan tangani risiko</div>
+          </button>
+          <button onclick="sendSampleQuery('Apa isi klausul 8.1 ISO 37001:2025 anti penyuapan?')" class="p-3 rounded-xl bg-[var(--panel)] hover:bg-[var(--panel-hover)] border border-[var(--border)] transition">
+            <div class="text-xs font-semibold text-amber-400 mb-0.5">ISO 37001:2025 Anti Penyuapan</div>
+            <div class="text-[11px] text-[var(--text-muted)]">Klausul 8.1 Pengendalian operasional</div>
+          </button>
+          <button onclick="sendSampleQuery('Bagaimana ketentuan klausul 6.1 PP 50/2012 SMK3?')" class="p-3 rounded-xl bg-[var(--panel)] hover:bg-[var(--panel-hover)] border border-[var(--border)] transition">
+            <div class="text-xs font-semibold text-orange-400 mb-0.5">PP 50/2012 SMK3</div>
+            <div class="text-[11px] text-[var(--text-muted)]">Klausul 6.1 Rencana K3</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Composer Bar -->
+    <div class="p-4 border-t border-[var(--border)] bg-[var(--panel)]">
+      <form onsubmit="handleChatSubmit(event)" class="max-w-3xl mx-auto relative flex items-center bg-[var(--bg)] border border-[var(--border)] rounded-xl px-3 py-2 focus-within:border-blue-500 transition">
+        <textarea id="chatInput" rows="1" placeholder="Tanyakan klausul standar (contoh: Klausul 4.1 ISO 9001)..." class="w-full bg-transparent text-xs text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none resize-none max-h-24 custom-scrollbar py-1" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit(event);}"></textarea>
+        <button type="submit" class="ml-2 p-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shrink-0 transition">Kirim</button>
+      </form>
+      <div class="text-center mt-1.5 text-[10px] text-[var(--text-muted)]">Tekan Ctrl+K untuk fokus input, Ctrl+B untuk toggle Wiki KB.</div>
+    </div>
+  </main>
+
+  <!-- RIGHT: WinR Knowledge Wiki Module (560px, collapsible) -->
+  <aside id="wikiModule" class="w-[560px] bg-[var(--panel)] border-l border-[var(--border)] flex flex-col shrink-0 z-30 transition-all duration-300">
+    <!-- Wiki Header & Tabs -->
+    <div class="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+        <h3 class="font-bold text-xs">WinR Knowledge Wiki (165 Klausul)</h3>
+      </div>
+      <button onclick="toggleKB()" class="p-1.5 rounded hover:bg-[var(--panel-hover)] text-[var(--text-muted)] hover:text-white">✕</button>
+    </div>
+
+    <!-- Tabs Bar -->
+    <div class="flex border-b border-[var(--border)] bg-[var(--bg)] px-2 py-1 space-x-1">
+      <button onclick="switchWikiTab('pages')" id="tabBtn-pages" class="flex-1 py-1.5 px-2 rounded text-xs font-medium text-blue-400 bg-[var(--panel)] border border-[var(--border)] transition">📚 Pages</button>
+      <button onclick="switchWikiTab('content')" id="tabBtn-content" class="flex-1 py-1.5 px-2 rounded text-xs font-medium text-[var(--text-muted)] hover:text-white transition">📖 Content</button>
+      <button onclick="switchWikiTab('source')" id="tabBtn-source" class="flex-1 py-1.5 px-2 rounded text-xs font-medium text-[var(--text-muted)] hover:text-white transition">🔍 Source</button>
+      <button onclick="switchWikiTab('pdfs')" id="tabBtn-pdfs" class="flex-1 py-1.5 px-2 rounded text-xs font-medium text-[var(--text-muted)] hover:text-white transition">📄 PDFs</button>
+      <button onclick="switchWikiTab('qa')" id="tabBtn-qa" class="flex-1 py-1.5 px-2 rounded text-xs font-medium text-[var(--text-muted)] hover:text-white transition">✅ QA</button>
+    </div>
+
+    <!-- Tab Contents Container -->
+    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar relative" id="wikiTabContent">
+      <!-- Dynamically rendered tab content -->
+    </div>
+  </aside>
+
+  <!-- Modals & Toasts Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- PDF Viewer / Modal templates if needed -->
+  <div id="deleteModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-[var(--panel)] border border-[var(--border)] p-6 rounded-2xl max-w-sm w-full space-y-4">
+      <h3 class="font-bold text-sm text-red-400">Konfirmasi Hapus Dokumen</h3>
+      <p id="deleteModalText" class="text-xs text-[var(--text-muted)]"></p>
+      <div class="flex space-x-2 justify-end">
+        <button onclick="closeDeleteModal()" class="px-3 py-1.5 rounded bg-[var(--panel-hover)] text-xs">Batal</button>
+        <button id="confirmDeleteBtn" class="px-3 py-1.5 rounded bg-red-600 hover:bg-red-500 text-xs text-white">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+     * A. DATA LAYER & MASTER CLAUSES (165 Master Clauses)
+     * ========================================================== */
+    const MASTER_CLAUSES = {
+      'iso9001-2015': [
+        { id: '4.1', title: 'Memahami organisasi dan konteksnya' },
+        { id: '4.2', title: 'Memahami kebutuhan dan harapan pihak berkepentingan' },
+        { id: '4.3', title: 'Menentukan ruang lingkup sistem manajemen mutu' },
+        { id: '4.4', title: 'Sistem manajemen mutu dan prosesnya' },
+        { id: '5.1', title: 'Kepemimpinan dan komitmen' },
+        { id: '5.2', title: 'Kebijakan mutu' },
+        { id: '5.3', title: 'Peran, tanggung jawab dan wewenang organisasi' },
+        { id: '6.1', title: 'Tindakan untuk menangani risiko dan peluang' },
+        { id: '6.2', title: 'Sasaran mutu dan perencanaan pencapaiannya' },
+        { id: '6.3', title: 'Perencanaan perubahan' },
+        { id: '7.1', title: 'Sumber daya' },
+        { id: '7.2', title: 'Kompetensi' },
+        { id: '7.3', title: 'Kepedulian' },
+        { id: '7.4', title: 'Komunikasi' },
+        { id: '7.5', title: 'Informasi terdokumentasi' },
+        { id: '7.5.3', title: 'Pengendalian informasi terdokumentasi' },
+        { id: '8.1', title: 'Perencanaan dan pengendalian operasional' },
+        { id: '8.2', title: 'Persyaratan untuk produk dan layanan' },
+        { id: '8.3', title: 'Desain dan pengembangan produk dan layanan' },
+        { id: '8.4', title: 'Pengendalian proses, produk dan layanan penyedia eksternal' },
+        { id: '8.5', title: 'Produksi dan penyediaan layanan' },
+        { id: '8.6', title: 'Pelepasan produk dan layanan' },
+        { id: '8.7', title: 'Pengendalian keluaran yang tidak sesuai' },
+        { id: '9.1', title: 'Pemantauan, pengukuran, analisis dan evaluasi' },
+        { id: '9.2', title: 'Audit internal' },
+        { id: '9.3', title: 'Tinjauan manajemen' },
+        { id: '10.1', title: 'Umum (Peningkatan)' },
+        { id: '10.2', title: 'Ketidaksesuaian dan tindakan korektif' },
+        { id: '10.3', title: 'Peningkatan berkelanjutan' }
+      ],
+      'iso14001-2015': [
+        { id: '4.1', title: 'Memahami organisasi dan konteksnya' },
+        { id: '4.2', title: 'Memahami kebutuhan dan harapan pekerja & pihak berkepentingan' },
+        { id: '4.3', title: 'Menentukan ruang lingkup sistem manajemen lingkungan' },
+        { id: '4.4', title: 'Sistem manajemen lingkungan' },
+        { id: '5.1', title: 'Kepemimpinan dan komitmen' },
+        { id: '5.2', title: 'Kebijakan lingkungan' },
+        { id: '5.3', title: 'Peran, tanggung jawab dan wewenang organisasi' },
+        { id: '6.1.1', title: 'Umum: Tindakan untuk menangani risiko dan peluang' },
+        { id: '6.1.2', title: 'Aspek lingkungan' },
+        { id: '6.1.3', title: 'Kewajiban penataan (compliance obligations)' },
+        { id: '6.1.4', title: 'Perencanaan tindakan' },
+        { id: '6.2', title: 'Sasaran lingkungan dan perencanaan pencapaiannya' },
+        { id: '7.1', title: 'Sumber daya' },
+        { id: '7.2', title: 'Kompetensi' },
+        { id: '7.3', title: 'Kepedulian' },
+        { id: '7.4', title: 'Komunikasi' },
+        { id: '7.5', title: 'Informasi terdokumentasi' },
+        { id: '8.1', title: 'Perencanaan dan pengendalian operasional' },
+        { id: '8.2', title: 'Kesiapsiagaan dan tanggap darurat' },
+        { id: '9.1.1', title: 'Pemantauan, pengukuran, analisis dan evaluasi' },
+        { id: '9.1.2', title: 'Evaluasi kepatuhan' },
+        { id: '9.2', title: 'Audit internal' },
+        { id: '9.3', title: 'Tinjauan manajemen' },
+        { id: '10.1', title: 'Umum (Peningkatan Lingkungan)' },
+        { id: '10.2', title: 'Ketidaksesuaian dan tindakan korektif' },
+        { id: '10.3', title: 'Peningkatan berkelanjutan' },
+        { id: '4.5', title: 'Kebijakan K3 & Lingkungan terintegrasi' }
+      ],
+      'iso37001-2025': [
+        { id: '4.1', title: 'Konteks organisasi anti penyuapan' },
+        { id: '4.2', title: 'Pemahaman kebutuhan pihak berkepentingan' },
+        { id: '4.3', title: 'Ruang lingkup sistem manajemen anti penyuapan' },
+        { id: '4.4', title: 'Penilaian risiko penyuapan' },
+        { id: '5.1', title: 'Kepemimpinan, komitmen dan badan pengelola' },
+        { id: '5.2', title: 'Fungsi kepatuhan anti penyuapan' },
+        { id: '5.3', title: 'Delegasi pengambilan keputusan' },
+        { id: '6.1', title: 'Tindakan menangani risiko' },
+        { id: '6.2', title: 'Sasaran anti penyuapan' },
+        { id: '7.1', title: 'Sumber daya' },
+        { id: '7.2', title: 'Pelatihan dan kesadaran' },
+        { id: '7.3', title: 'Uji tuntas (due diligence)' },
+        { id: '8.1', title: 'Pengendalian keuangan' },
+        { id: '8.2', title: 'Pengendalian non-keuangan' },
+        { id: '8.3', title: 'Penerapan pengendalian anti penyuapan oleh pengendali' },
+        { id: '8.4', title: 'Komitmen anti penyuapan' },
+        { id: '8.5', title: 'Hadiah, keramahan, sumbangan dan keuntungan serupa' },
+        { id: '8.6', title: 'Mengelola ketidakcukupan pengendalian anti penyuapan' },
+        { id: '8.7', title: 'Pelaporan dugaan penyuapan (whistleblowing)' },
+        { id: '8.8', title: 'Investigasi dan penanganan penyuapan' },
+        { id: '8.9', title: 'Pencegahan konflik kepentingan' },
+        { id: '8.10', title: 'Pengendalian terkait rekanan bisnis' },
+        { id: '9.1', title: 'Pemantauan, pengukuran, analisis dan evaluasi' },
+        { id: '9.2', title: 'Audit internal' },
+        { id: '9.3', title: 'Tinjauan manajemen oleh badan pengelola' },
+        { id: '9.4', title: 'Tinjauan fungsi kepatuhan anti penyuapan' },
+        { id: '10.1', title: 'Penanganan ketidaksesuaian dan tindakan korektif' },
+        { id: '10.2', title: 'Peningkatan berkelanjutan sistem anti penyuapan' },
+        { id: '5.4', title: 'Kebijakan anti penyuapan' },
+        { id: '6.3', title: 'Perencanaan perubahan sistem' },
+        { id: '7.4', title: 'Komunikasi anti penyuapan' },
+        { id: '7.5', title: 'Informasi terdokumentasi anti penyuapan' },
+        { id: '9.5', title: 'Pemantauan kepatuhan eksternal' },
+        { id: '10.3', title: 'Tindakan pencegahan dini' }
+      ],
+      'iso45001-2018': [
+        { id: '4.1', title: 'Konteks organisasi K3' },
+        { id: '4.2', title: 'Pekerja dan pihak berkepentingan lainnya' },
+        { id: '4.3', title: 'Menentukan ruang lingkup SMKK3' },
+        { id: '4.4', title: 'Sistem manajemen K3' },
+        { id: '5.1', title: 'Kepemimpinan dan komitmen' },
+        { id: '5.2', title: 'Kebijakan K3' },
+        { id: '5.3', title: 'Peran, tanggung jawab dan wewenang' },
+        { id: '5.4', title: 'Konsultasi dan partisipasi pekerja' },
+        { id: '6.1.1', title: 'Umum: Identifikasi bahaya & penilaian risiko K3' },
+        { id: '6.1.2', title: 'Penilaian bahaya dan risiko K3' },
+        { id: '6.1.3', title: 'Penentuan persyaratan hukum dan persyaratan lainnya' },
+        { id: '6.1.4', title: 'Perencanaan tindakan K3' },
+        { id: '6.2', title: 'Sasaran K3 dan perencanaan pencapaiannya' },
+        { id: '7.1', title: 'Sumber daya K3' },
+        { id: '7.2', title: 'Kompetensi K3' },
+        { id: '7.3', title: 'Kepedulian dan kesadaran pekerja' },
+        { id: '7.4', title: 'Komunikasi internal dan eksternal K3' },
+        { id: '7.5', title: 'Informasi terdokumentasi K3' },
+        { id: '8.1.1', title: 'Perencanaan dan pengendalian operasional K3' },
+        { id: '8.1.2', title: 'Menghilangkan bahaya dan mengurangi risiko K3' },
+        { id: '8.1.3', title: 'Manajemen perubahan (MOC)' },
+        { id: '8.1.4', title: 'Pengadaan barang, jasa dan kontraktor' },
+        { id: '8.2', title: 'Kesiapsiagaan dan tanggap darurat K3' },
+        { id: '9.1.1', title: 'Pemantauan, pengukuran, analisis dan evaluasi kinerja K3' },
+        { id: '9.1.2', title: 'Evaluasi kepatuhan peraturan perundang-undangan' },
+        { id: '9.2', title: 'Audit internal SMKK3' },
+        { id: '9.3', title: 'Tinjauan manajemen K3' },
+        { id: '10.1', title: 'Insiden, ketidaksesuaian dan tindakan korektif' },
+        { id: '10.2', title: 'Peningkatan berkelanjutan K3' },
+        { id: '6.2.2', title: 'Aksi perbaikan berkelanjutan sasaran' },
+        { id: '8.2.1', title: 'Uji coba sistem tanggap darurat' }
+      ],
+      'pp50-2012': [
+        { id: '1.1', title: 'Ketentuan umum PP 50 Tahun 2012' },
+        { id: '1.2', title: 'Tujuan penerapan SMK3' },
+        { id: '1.3', title: 'Prinsip dasar SMK3 di perusahaan' },
+        { id: '1.4', title: 'Ruang lingkup kewajiban penerapan SMK3' },
+        { id: '2.1', title: 'Kebijakan K3 nasional dan perusahaan' },
+        { id: '2.2', title: 'Penetapan kebijakan K3 oleh pengusaha' },
+        { id: '2.3', title: 'Keterlibatan pekerja dalam kebijakan' },
+        { id: '2.4', title: 'Penyebarluasan kebijakan K3' },
+        { id: '3.1', title: 'Perencanaan K3 dan identifikasi potensi bahaya' },
+        { id: '3.2', title: 'Penyusunan rencana K3 berbasis peraturan' },
+        { id: '4.1', title: 'Pelaksanaan rencana K3 & penyediaan sumber daya' },
+        { id: '4.2', title: 'Integrasi SMK3 dalam operasional perusahaan' },
+        { id: '5.1', title: 'Pemantauan dan evaluasi kinerja K3' },
+        { id: '5.2', title: 'Pemeriksaan dan pengukuran aspek K3' },
+        { id: '5.3', title: 'Audit internal SMK3 perusahaan' },
+        { id: '5.4', title: 'Tindakan perbaikan dan pencegahan' },
+        { id: '6.1', title: 'Pembangunan komitmen dan kebijakan SMK3' },
+        { id: '6.2', title: 'Organisasi K3 dan penunjukan ahli K3' },
+        { id: '6.3', title: 'Pelatihan dan kompetensi tenaga kerja' },
+        { id: '6.4', title: 'Komunikasi K3 di tempat kerja' },
+        { id: '6.5', title: 'Pengelolaan sistem dokumentasi' },
+        { id: '6.6', title: 'Penyusunan prosedur kerja aman' },
+        { id: '6.7', title: 'Pengendalian dokumen dan rekaman' },
+        { id: '6.8', title: 'Pencatatan dan pelaporan insiden' },
+        { id: '6.9', title: 'Pemeriksaan kesehatan tenaga kerja' },
+        { id: '7.1', title: 'Evaluasi penerapan SMK3 oleh instansi' },
+        { id: '7.2', title: 'Penilaian audit eksternal SMK3' },
+        { id: '7.3', title: 'Pemberian sertifikat dan label penghargaan' },
+        { id: '7.4', title: 'Pencabutan sertifikat karena pelanggaran' },
+        { id: '8.1', title: 'Hak dan kewajiban pengusaha' },
+        { id: '8.2', title: 'Kewajiban menyediakan Alat Pelindung Diri (APD)' },
+        { id: '8.3', title: 'Hak dan kewajiban tenaga kerja' },
+        { id: '8.4', title: 'Kewajiban melaporkan kondisi berbahaya' },
+        { id: '9.1', title: 'Pengawasan ketenagakerjaan dan K3' },
+        { id: '9.2', title: 'Sanksi administratif pelanggaran SMK3' },
+        { id: '9.3', title: 'Ketentuan sanksi pidana' },
+        { id: '10.1', title: 'Ketentuan peralihan' },
+        { id: '10.2', title: 'Penyesuaian sistem manajemen yang ada' },
+        { id: '11.1', title: 'Ketentuan penutup berlakunya peraturan' },
+        { id: '12.1', title: 'Lampiran I: Pedoman Penilaian Penerapan SMK3 (Prinsip 1)' },
+        { id: '12.2', title: 'Lampiran II: Pedoman Penilaian Penerapan SMK3 (Prinsip 2)' },
+        { id: '12.3', title: 'Lampiran III: Pedoman Penilaian Penerapan SMK3 (Prinsip 3)' },
+        { id: '12.4', title: 'Lampiran IV: Pedoman Penilaian Penerapan SMK3 (Prinsip 4)' },
+        { id: '12.5', title: 'Lampiran V: Pedoman Penilaian Penerapan SMK3 (Prinsip 5)' }
+      ]
+    };
+
+    const SOURCE_META = {
+      'iso9001-2015': { source_name: 'ISO 9001:2015', short: 'ISO 9001', color: '#7c9cff', cssClass: 's-9001' },
+      'iso14001-2015': { source_name: 'ISO 14001:2015', short: 'ISO 14001', color: '#22d3ee', cssClass: 's-14001' },
+      'iso37001-2025': { source_name: 'ISO 37001:2025', short: 'ISO 37001', color: '#fbbf24', cssClass: 's-37001' },
+      'iso45001-2018': { source_name: 'ISO 45001:2018', short: 'ISO 45001', color: '#4ade80', cssClass: 's-45001' },
+      'pp50-2012': { source_name: 'PP No. 50 Tahun 2012', short: 'PP 50/2012', color: '#f97316', cssClass: 's-pp50' }
+    };
+
+    /* ==========================================================
+     * STORAGE MANAGER (IndexedDB v6 + localStorage + memory fallback)
+     * ========================================================== */
+    const StorageManager = {
+      dbName: 'WinRKnowledgeWiki',
+      version: 6,
+      db: null,
+      async init() {
+        return new Promise((resolve) => {
+          if (!window.indexedDB) {
+            console.warn('IndexedDB not supported, falling back to localStorage.');
+            resolve(false);
+            return;
+          }
+          const request = indexedDB.open(this.dbName, this.version);
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('pdfDocuments')) db.createObjectStore('pdfDocuments', { keyPath: 'id' });
+            if (!db.objectStoreNames.contains('sopDocuments')) db.createObjectStore('sopDocuments', { keyPath: 'id' });
+            if (!db.objectStoreNames.contains('appState')) db.createObjectStore('appState', { keyPath: 'key' });
+          };
+          request.onsuccess = (e) => {
+            this.db = e.target.result;
+            resolve(true);
+          };
+          request.onerror = () => resolve(false);
+        });
+      },
+      async save(storeName, data) {
+        if (!this.db) {
+          localStorage.setItem(storeName + '_fallback', JSON.stringify(data));
+          return;
+        }
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          store.put(data);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      },
+      async get(storeName, key) {
+        if (!this.db) {
+          const item = localStorage.getItem(storeName + '_fallback');
+          return item ? JSON.parse(item) : null;
+        }
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result ? req.result.value || req.result : null);
+          req.onerror = () => resolve(null);
+        });
+      },
+      async getAll(storeName) {
+        if (!this.db) return [];
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+      },
+      async delete(storeName, key) {
+        if (!this.db) return;
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          store.delete(key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      },
+      getStatus() {
+        return this.db ? 'IndexedDB Aktif (v6)' : 'LocalStorage Fallback';
+      }
+    };
+
+    /* ==========================================================
+     * APPLICATION STATE & BUILDERS
+     * ========================================================== */
+    let wikiPages = [];
+    let referencePdfs = [];
+    let conversations = [];
+    let currentConvId = null;
+
+    let state = {
+      activePageId: 'iso9001-2015-4-1',
+      activeSourceId: 'iso9001-2015',
+      sourcePage: 0,
+      sourceTab: 'outline',
+      activeRefPdf: null,
+      collapsedSources: {}
+    };
+
+    function buildOutline(sourceId) {
+      const clauses = MASTER_CLAUSES[sourceId] || [];
+      return clauses.map((c, idx) => ({
+        clause_id: c.id,
+        title: c.title,
+        page_num: idx + 1,
+        lvl: c.id.split('.').length
+      }));
+    }
+
+    function generateWikiPagesFromMaster() {
+      const generated = [];
+      for (const [srcId, clauses] of Object.entries(MASTER_CLAUSES)) {
+        const meta = SOURCE_META[srcId];
+        clauses.forEach(c => {
+          const pageId = `${srcId}-${c.id.replace(/\./g, '-')}`;
+          generated.push({
+            id: pageId,
+            source_id: srcId,
+            title: `${meta.short} Klausul ${c.id}: ${c.title}`,
+            summary: `Panduan implementasi resmi klausul ${c.id} (${c.title}) berdasarkan standar ${meta.source_name}.`,
+            requirements: [
+              { text: `Organisasi wajib menetapkan, mendokumentasikan, dan menerapkan ketentuan klausul ${c.id}.`, cite: `${meta.short} - Klausul ${c.id}` },
+              { text: `Evaluasi berkala wajib dilakukan untuk memastikan efektivitas penerapan klausul ${c.id}.`, cite: `${meta.short} - Audit & Tinjauan` }
+            ],
+            source_trace: { source_name: meta.source_name, clause_id: c.id, page: 1 },
+            links: []
+          });
+        });
+      }
+      return generated;
+    }
+
+    function autoRestoreMissingClauses() {
+      const existingIds = new Set(wikiPages.map(p => p.id));
+      let restoredCount = 0;
+      for (const [srcId, clauses] of Object.entries(MASTER_CLAUSES)) {
+        const meta = SOURCE_META[srcId];
+        clauses.forEach(c => {
+          const pageId = `${srcId}-${c.id.replace(/\./g, '-')}`;
+          if (!existingIds.has(pageId)) {
+            wikiPages.push({
+              id: pageId,
+              source_id: srcId,
+              title: `${meta.short} Klausul ${c.id}: ${c.title}`,
+              summary: `Pemulihan otomatis klausul ${c.id} (${c.title}) standar ${meta.source_name}.`,
+              requirements: [{ text: `Ketentuan wajib klausul ${c.id} terpenuhi.`, cite: `${meta.short} - ${c.id}` }],
+              source_trace: { source_name: meta.source_name, clause_id: c.id, page: 1 },
+              links: []
+            });
+            restoredCount++;
+          }
+        });
+      }
+      return restoredCount;
+    }
+
+    /* ==========================================================
+     * UI RENDERING & TABS
+     * ========================================================== */
+    let currentWikiTab = 'pages';
+
+    function switchWikiTab(tab) {
+      currentWikiTab = tab;
+      ['pages', 'content', 'source', 'pdfs', 'qa'].forEach(t => {
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'flex-1 py-1.5 px-2 rounded text-xs font-medium text-blue-400 bg-[var(--panel)] border border-[var(--border)] transition';
+          } else {
+            btn.className = 'flex-1 py-1.5 px-2 rounded text-xs font-medium text-[var(--text-muted)] hover:text-white transition';
+          }
+        }
+      });
+      renderWikiTabContent();
+    }
+
+    function renderWikiTabContent() {
+      const container = document.getElementById('wikiTabContent');
+      if (!container) return;
+
+      if (currentWikiTab === 'pages') {
+        container.innerHTML = renderPagesTabHTML();
+      } else if (currentWikiTab === 'content') {
+        container.innerHTML = renderContentTabHTML();
+      } else if (currentWikiTab === 'source') {
+        container.innerHTML = renderSourceTabHTML();
+      } else if (currentWikiTab === 'pdfs') {
+        container.innerHTML = renderPdfsTabHTML();
+      } else if (currentWikiTab === 'qa') {
+        container.innerHTML = renderQaTabHTML();
+      }
+    }
+
+    const SECTION_GROUPS = {
+      '1': '1 · Umum',
+      '2': '2 · Acuan',
+      '3': '3 · Istilah',
+      '4': '4 · Konteks Organisasi',
+      '5': '5 · Kepemimpinan',
+      '6': '6 · Perencanaan',
+      '7': '7 · Dukungan',
+      '8': '8 · Operasi',
+      '9': '9 · Evaluasi Kinerja',
+      '10': '10 · Peningkatan',
+      '11': '11 · Audit SMK3',
+      '12': '12 · Lampiran & Ketentuan'
+    };
+
+    function renderPagesTabHTML() {
+      let html = '<div class="space-y-4">';
+      for (const [srcId, meta] of Object.entries(SOURCE_META)) {
+        const clauses = MASTER_CLAUSES[srcId] || [];
+        const isCollapsed = state.collapsedSources[srcId];
+        html += `
+          <div class="border border-[var(--border)] rounded-xl overflow-hidden bg-[var(--bg)]">
+            <div onclick="toggleSourceCollapse('${srcId}')" class="px-3 py-2.5 bg-[var(--panel)] border-b border-[var(--border)] flex items-center justify-between cursor-pointer hover:bg-[var(--panel-hover)]">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background:${meta.color}"></span>
+                <span class="font-bold text-xs">${meta.source_name}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--border)] text-[var(--text-muted)]">${clauses.length} Klausul</span>
+              </div>
+              <span class="text-xs text-[var(--text-muted)]">${isCollapsed ? '▼' : '▲'}</span>
+            </div>
+            <div class="${isCollapsed ? 'hidden' : 'p-2 space-y-1'}">
+        `;
+
+        if (!isCollapsed) {
+          clauses.forEach(c => {
+            const pageId = `${srcId}-${c.id.replace(/\./g, '-')}`;
+            const isSelected = state.activePageId === pageId;
+            html += `
+              <div onclick="selectWikiPage('${pageId}')" class="group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition ${isSelected ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'hover:bg-[var(--panel-hover)] text-[var(--text)]'}">
+                <div class="flex items-center space-x-2 truncate">
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--border)] shrink-0">${c.id}</span>
+                  <span class="truncate text-[11px]">${c.title}</span>
+                </div>
+              </div>
+            `;
+          });
+        }
+        html += `</div></div>`;
+      }
+
+      // Reference PDFs section
+      html += `
+        <div class="mt-6 border border-[var(--border)] rounded-xl p-3 bg-[var(--bg)]">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-bold text-xs">Dokumen Referensi PDF</h4>
+            <span class="text-[10px] font-mono text-[var(--text-muted)]">${StorageManager.getStatus()}</span>
+          </div>
+          <div id="refList" class="space-y-1.5 mb-3">
+            ${referencePdfs.length === 0 ? '<div class="text-[11px] text-[var(--text-muted)] italic">Belum ada PDF referensi diunggah.</div>' : referencePdfs.map(pdf => `
+              <div class="flex items-center justify-between p-2 rounded bg-[var(--panel)] border border-[var(--border)] text-xs">
+                <span class="truncate cursor-pointer hover:text-blue-400" onclick="openPdfRef('${pdf.id}')">📄 ${pdf.name}</span>
+                <button onclick="deletePdfRef('${pdf.id}')" class="text-red-400 hover:text-red-300 text-[10px]">Hapus</button>
+              </div>
+            `).join('')}
+          </div>
+          <label class="flex flex-col items-center justify-center border-2 border-dashed border-[var(--border)] hover:border-blue-500 rounded-xl p-4 cursor-pointer bg-[var(--panel)] transition">
+            <span class="text-xs font-semibold text-blue-400 mb-1">📤 Upload PDF Standar / SOP</span>
+            <span class="text-[10px] text-[var(--text-muted)]">Pilih atau seret file PDF ke sini</span>
+            <input type="file" id="refFile" accept=".pdf" multiple class="hidden" onchange="handlePdfUpload(event)">
+          </label>
+        </div>
+      </div>`;
+      return html;
+    }
+
+    function renderContentTabHTML() {
+      const page = wikiPages.find(p => p.id === state.activePageId) || wikiPages[0];
+      if (!page) return '<div class="p-4 text-xs text-[var(--text-muted)]">Pilih klausul dari tab Pages.</div>';
+      const meta = SOURCE_META[page.source_id] || { source_name: 'Standard', short: 'STD', color: '#3b82f6' };
+
+      return `
+        <div class="space-y-4 animate-fadeIn">
+          <div class="flex items-center space-x-2 text-[10px] text-[var(--text-muted)] font-mono">
+            <span>${meta.source_name}</span>
+            <span>/</span>
+            <span class="text-blue-400">${page.id}</span>
+          </div>
+          <h2 class="text-base font-bold text-white">${page.title}</h2>
+          <div class="p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-xs text-[var(--text-muted)] leading-relaxed">
+            ${page.summary}
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-bold text-xs text-blue-400">Persyaratan & Ketentuan Utama:</h4>
+            ${page.requirements.map(req => `
+              <div class="p-2.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-xs space-y-1">
+                <div>${req.text}</div>
+                <div class="text-[10px] font-mono text-[var(--text-muted)]">Referensi: ${req.cite}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="p-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] text-[11px] font-mono text-[var(--text-muted)]">
+            Trace Source: ${page.source_trace.source_name} (Klausul ${page.source_trace.clause_id})
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSourceTabHTML() {
+      return `
+        <div class="space-y-3">
+          <div class="flex space-x-1 bg-[var(--bg)] p-1 rounded-lg border border-[var(--border)]">
+            <button onclick="setSourceSubTab('outline')" class="flex-1 py-1 rounded text-xs font-medium ${state.sourceTab === 'outline' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)]'}">Outline</button>
+            <button onclick="setSourceSubTab('halaman')" class="flex-1 py-1 rounded text-xs font-medium ${state.sourceTab === 'halaman' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)]'}">Halaman</button>
+            <button onclick="setSourceSubTab('pdf')" class="flex-1 py-1 rounded text-xs font-medium ${state.sourceTab === 'pdf' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)]'}">PDF Viewer</button>
+          </div>
+          <div id="sourceSubContent">
+            ${renderSourceSubContent()}
+          </div>
+        </div>
+      `;
+    }
+
+    function setSourceSubTab(tab) {
+      state.sourceTab = tab;
+      renderWikiTabContent();
+    }
+
+    function renderSourceSubContent() {
+      if (state.sourceTab === 'outline') {
+        const outline = buildOutline(state.activeSourceId);
+        return `
+          <div class="space-y-1">
+            ${outline.map(o => `
+              <div onclick="selectOutlineItem('${o.clause_id}')" class="flex items-center justify-between p-2 rounded hover:bg-[var(--panel-hover)] text-xs cursor-pointer border border-transparent hover:border-[var(--border)]">
+                <span class="font-mono text-blue-400">${o.clause_id}</span>
+                <span class="truncate ml-2 flex-1">${o.title}</span>
+                <span class="text-[10px] font-mono text-[var(--text-muted)]">Hal. ${o.page_num}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (state.sourceTab === 'halaman') {
+        const clauses = MASTER_CLAUSES[state.activeSourceId] || [];
+        const c = clauses[state.sourcePage] || clauses[0];
+        const meta = SOURCE_META[state.activeSourceId];
+        return `
+          <div class="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] space-y-3">
+            <div class="flex justify-between items-center text-[11px] text-[var(--text-muted)] font-mono">
+              <span>${meta.source_name}</span>
+              <span>Halaman ${state.sourcePage + 1} / ${clauses.length}</span>
+            </div>
+            <h3 class="font-bold text-sm text-white"><span class="hl">${c.id}</span> — ${c.title}</h3>
+            <p class="text-xs text-[var(--text-muted)] leading-relaxed">
+              Dokumen resmi standar ${meta.source_name} mensyaratkan organisasi untuk konsisten menerapkan klausul <span class="hl">${c.id}</span> guna memastikan kepatuhan manajemen dan peningkatan berkelanjutan sistem.
+            </p>
+            <div class="flex justify-between pt-2">
+              <button onclick="changeSourcePage(-1)" class="px-3 py-1 rounded bg-[var(--panel-hover)] text-xs">← Sebelumnya</button>
+              <button onclick="changeSourcePage(1)" class="px-3 py-1 rounded bg-blue-600 text-xs text-white">Berikutnya →</button>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-center space-y-3">
+            <div class="text-xs text-[var(--text-muted)]">${state.activeRefPdf ? 'Menampilkan Viewer PDF' : 'Belum ada PDF yang dipilih untuk ditampilkan.'}</div>
+            <canvas id="pdfCanvas" class="w-full rounded shadow border border-[var(--border)] bg-white max-h-[400px] object-contain"></canvas>
+          </div>
+        `;
+      }
+    }
+
+    function renderPdfsTabHTML() {
+      return `
+        <div class="space-y-4">
+          <div class="p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-between text-xs">
+            <span>Status Penyimpanan:</span>
+            <span class="font-mono text-blue-400">${StorageManager.getStatus()}</span>
+          </div>
+          <div class="space-y-2">
+            ${referencePdfs.length === 0 ? '<div class="text-xs text-[var(--text-muted)] italic text-center py-6">Belum ada file PDF tersimpan.</div>' : referencePdfs.map(pdf => `
+              <div class="p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-between text-xs">
+                <div class="truncate">
+                  <div class="font-semibold truncate">📄 ${pdf.name}</div>
+                  <div class="text-[10px] text-[var(--text-muted)] font-mono">${pdf.size || 'PDF Document'}</div>
+                </div>
+                <div class="flex space-x-2 shrink-0">
+                  <button onclick="openPdfRef('${pdf.id}')" class="px-2.5 py-1 rounded bg-blue-600/20 text-blue-400 text-xs">Buka</button>
+                  <button onclick="deletePdfRef('${pdf.id}')" class="px-2.5 py-1 rounded bg-red-600/20 text-red-400 text-xs">Hapus</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQaTabHTML() {
+      let totalExpected = 0;
+      let totalRegistered = 0;
+      let missingList = [];
+
+      const rows = Object.entries(MASTER_CLAUSES).map(([srcId, clauses]) => {
+        const meta = SOURCE_META[srcId];
+        const registered = clauses.filter(c => wikiPages.some(p => p.id === `${srcId}-${c.id.replace(/\./g, '-')}`)).length;
+        const missing = clauses.length - registered;
+        totalExpected += clauses.length;
+        totalRegistered += registered;
+
+        clauses.forEach(c => {
+          const pId = `${srcId}-${c.id.replace(/\./g, '-')}`;
+          if (!wikiPages.some(p => p.id === pId)) {
+            missingList.push({ id: c.id, title: c.title, source: meta.short });
+          }
+        });
+
+        return `
+          <tr class="border-b border-[var(--border)] text-xs">
+            <td class="py-2.5 px-3 font-semibold">${meta.source_name}</td>
+            <td class="py-2.5 px-3 font-mono">${clauses.length}</td>
+            <td class="py-2.5 px-3 font-mono">${registered}</td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-mono ${missing === 0 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-red-950 text-red-350 border border-red-800'}">${missing === 0 ? 'LENGKAP' : missing + ' hilang'}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalMissing = totalExpected - totalRegistered;
+
+      return `
+        <div class="space-y-4">
+          <div class="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg)]">
+            <table class="w-full text-left">
+              <thead class="bg-[var(--panel)] border-b border-[var(--border)] text-[11px] text-[var(--text-muted)]">
+                <tr>
+                  <th class="py-2 px-3">Standar</th>
+                  <th class="py-2 px-3">Harusnya</th>
+                  <th class="py-2 px-3">Terdaftar</th>
+                  <th class="py-2 px-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="p-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] flex items-center justify-between text-xs">
+            <span class="font-bold">Total: ${totalExpected} klausul / ${totalRegistered} terdaftar / ${totalMissing} hilang</span>
+            <button onclick="triggerAutoRestore()" class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition">🔧 Auto-Restore Klausul</button>
+          </div>
+          ${totalMissing > 0 ? `
+            <div class="p-3 rounded-xl bg-red-950/30 border border-red-900/50 space-y-2">
+              <h4 class="font-bold text-xs text-red-400">KLAUSUL HILANG (${totalMissing})</h4>
+              <div class="space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
+                ${missingList.map(m => `<div class="text-[11px] font-mono text-red-300">❌ [${m.source}] Klausul ${m.id}: ${m.title}</div>`).join('')}
+              </div>
+            </div>
+          ` : `
+            <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-900/50 text-emerald-300 text-xs text-center font-medium">
+              ✅ Semua klausul 5 standar lengkap dan tervalidasi.
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    /* ==========================================================
+     * WIKI ACTIONS & CONTROLS
+     * ========================================================== */
+    function toggleSourceCollapse(srcId) {
+      state.collapsedSources[srcId] = !state.collapsedSources[srcId];
+      renderWikiTabContent();
+    }
+
+    function selectWikiPage(pageId) {
+      state.activePageId = pageId;
+      const found = wikiPages.find(p => p.id === pageId);
+      if (found) {
+        state.activeSourceId = found.source_id;
+      }
+      switchWikiTab('content');
+    }
+
+    function selectOutlineItem(clauseId) {
+      const pageId = `${state.activeSourceId}-${clauseId.replace(/\./g, '-')}`;
+      selectWikiPage(pageId);
+    }
+
+    function changeSourcePage(dir) {
+      const clauses = MASTER_CLAUSES[state.activeSourceId] || [];
+      state.sourcePage = Math.max(0, Math.min(clauses.length - 1, state.sourcePage + dir));
+      renderWikiTabContent();
+    }
+
+    function triggerAutoRestore() {
+      const count = autoRestoreMissingClauses();
+      updateQABadge();
+      renderWikiTabContent();
+      showToast(`Berhasil merestorasi ${count} klausul yang hilang.`, 'success');
+      autoSave();
+    }
+
+    function updateQABadge() {
+      let totalExpected = 0;
+      let totalRegistered = 0;
+      for (const [srcId, clauses] of Object.entries(MASTER_CLAUSES)) {
+        totalExpected += clauses.length;
+        totalRegistered += clauses.filter(c => wikiPages.some(p => p.id === `${srcId}-${c.id.replace(/\./g, '-')}`)).length;
+      }
+      const missing = totalExpected - totalRegistered;
+      const badge = document.getElementById('qaBadge');
+      if (badge) {
+        badge.innerText = `${totalRegistered}/${totalExpected} Klausul OK`;
+        badge.className = missing === 0 ? 'px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800' : 'px-2 py-0.5 rounded-full text-[10px] font-mono bg-red-950 text-red-300 border border-red-800';
+      }
+    }
+
+    function toggleKB() {
+      const mod = document.getElementById('wikiModule');
+      if (mod) {
+        mod.classList.toggle('hidden');
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `p-3 rounded-xl border text-xs shadow-lg animate-fadeIn pointer-events-auto ${type === 'success' ? 'bg-emerald-950 text-emerald-200 border-emerald-800' : 'bg-[var(--panel)] text-white border-[var(--border)]'}`;
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3500);
+    }
+
+    /* ==========================================================
+     * PDF UPLOAD & VIEWER
+     * ========================================================== */
+    async function handlePdfUpload(e) {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+      for (const file of files) {
+        const id = 'pdf_' + Math.random().toString(36).substring(2, 9);
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const blobData = event.target.result;
+          const pdfObj = { id, name: file.name, size: (file.size / 1024).toFixed(1) + ' KB', blobData };
+          referencePdfs.push(pdfObj);
+          await StorageManager.save('pdfDocuments', pdfObj);
+          renderWikiTabContent();
+          showToast(`PDF "${file.name}" berhasil diunggah.`, 'success');
+          autoSave();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    async function deletePdfRef(id) {
+      referencePdfs = referencePdfs.filter(p => p.id !== id);
+      await StorageManager.delete('pdfDocuments', id);
+      renderWikiTabContent();
+      showToast('PDF berhasil dihapus.', 'info');
+      autoSave();
+    }
+
+    async function openPdfRef(id) {
+      const pdf = referencePdfs.find(p => p.id === id);
+      if (!pdf || !pdf.blobData) return;
+      state.activeRefPdf = pdf;
+      switchWikiTab('source');
+      setSourceSubTab('pdf');
+      
+      try {
+        const loadingTask = pdfjsLib.getDocument({ data: pdf.blobData });
+        const pdfDoc = await loadingTask.promise;
+        const page = await pdfDoc.getPage(1);
+        const canvas = document.getElementById('pdfCanvas');
+        if (canvas) {
+          const context = canvas.getContext('2d');
+          const viewport = page.getViewport({ scale: 1.2 });
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          await page.render({ canvasContext: context, viewport }).promise;
+        }
+      } catch (err) {
+        console.error('Error rendering PDF:', err);
+      }
+    }
+
+    /* ==========================================================
+     * CHAT SYSTEM & RAG
+     * ========================================================== */
+    function createNewChat() {
+      const newConv = {
+        id: 'conv_' + Math.random().toString(36).substring(2, 9),
+        title: 'Percakapan Baru',
+        messages: []
+      };
+      conversations.push(newConv);
+      currentConvId = newConv.id;
+      renderConvList();
+      renderChatMessages();
+    }
+
+    function renderConvList() {
+      const list = document.getElementById('convList');
+      if (!list) return;
+      list.innerHTML = conversations.map(c => `
+        <div onclick="selectConv('${c.id}')" class="px-3 py-2 rounded-lg text-xs cursor-pointer truncate transition ${c.id === currentConvId ? 'bg-[var(--panel-hover)] font-semibold text-white border border-[var(--border)]' : 'text-[var(--text-muted)] hover:text-white hover:bg-[var(--panel)]'}">
+          💬 ${c.title}
+        </div>
+      `).join('');
+    }
+
+    function selectConv(id) {
+      currentConvId = id;
+      renderConvList();
+      renderChatMessages();
+    }
+
+    function sendSampleQuery(text) {
+      document.getElementById('chatInput').value = text;
+      handleChatSubmit(new Event('submit'));
+    }
+
+    function handleChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const query = input.value.trim();
+      if (!query) return;
+      input.value = '';
+
+      if (!currentConvId) createNewChat();
+      const conv = conversations.find(c => c.id === currentConvId);
+      if (!conv) return;
+
+      if (conv.messages.length === 0) {
+        conv.title = query.length > 30 ? query.substring(0, 30) + '...' : query;
+        renderConvList();
+      }
+
+      conv.messages.push({ role: 'user', content: query, time: new Date().toLocaleTimeString() });
+      renderChatMessages();
+
+      // Process RAG response
+      setTimeout(() => {
+        const aiResponse = processRagQuery(query);
+        conv.messages.push({ role: 'assistant', ...aiResponse, time: new Date().toLocaleTimeString() });
+        renderChatMessages();
+        autoSave();
+      }, 400);
+    }
+
+    function processRagQuery(query) {
+      const qLower = query.toLowerCase();
+      
+      // Clause extraction regex e.g. "klausul 4.1 iso 9001" or "klausul 6.1 pp 2012"
+      let foundPage = null;
+
+      for (const page of wikiPages) {
+        const meta = SOURCE_META[page.source_id];
+        const matchClause = qLower.includes(page.source_trace.clause_id.toLowerCase());
+        const matchSource = qLower.includes(meta.short.toLowerCase()) || qLower.includes(meta.source_name.toLowerCase()) || (page.source_id === 'pp50-2012' && (qLower.includes('pp 50') || qLower.includes('pp 2012')));
+
+        if (matchClause && matchSource) {
+          foundPage = page;
+          break;
+        }
+      }
+
+      if (!foundPage) {
+        // Fallback keyword search
+        foundPage = wikiPages.find(p => qLower.split(' ').some(w => w.length > 3 && p.title.toLowerCase().includes(w))) || wikiPages[0];
+      }
+
+      if (foundPage) {
+        state.activePageId = foundPage.id;
+        state.activeSourceId = foundPage.source_id;
+        renderWikiTabContent();
+
+        return {
+          title: foundPage.title,
+          clause: foundPage.source_trace.clause_id,
+          summary: foundPage.summary,
+          requirements: foundPage.requirements,
+          sourceName: foundPage.source_trace.source_name,
+          pageId: foundPage.id
+        };
+      }
+
+      return {
+        title: 'Informasi Standar',
+        clause: 'Umum',
+        summary: `Query "${query}" diproses melalui basis pengetahuan WinR Knowledge Wiki.`,
+        requirements: [{ text: 'Pastikan menyebutkan klausul dan standar yang dituju secara spesifik (misal: ISO 9001 Klausul 4.1).', cite: 'WinR KB' }],
+        sourceName: 'WinR Knowledge Wiki',
+        pageId: wikiPages[0].id
+      };
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessages');
+      const emptyState = document.getElementById('emptyChatState');
+      const conv = conversations.find(c => c.id === currentConvId);
+
+      if (!conv || conv.messages.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        // keep empty state visible
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      container.innerHTML = conv.messages.map(m => {
+        if (m.role === 'user') {
+          return `
+            <div class="flex justify-end animate-fadeIn">
+              <div class="bg-blue-600 text-white rounded-2xl px-4 py-2.5 max-w-xl text-xs leading-relaxed shadow-sm">
+                ${escapeHtml(m.content)}
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex justify-start animate-fadeIn">
+              <div class="bg-[var(--panel)] border border-[var(--border)] rounded-2xl p-4 max-w-2xl text-xs space-y-3 shadow-md">
+                <div class="flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono">
+                  <span class="text-blue-400 font-bold">📚 WinR RAG Engine</span>
+                  <span>${m.sourceName} — Klausul ${m.clause}</span>
+                </div>
+                <h4 class="font-bold text-sm text-white">${m.title}</h4>
+                <p class="text-[var(--text-muted)] leading-relaxed">${m.summary}</p>
+                <div class="space-y-1.5 pt-1">
+                  ${m.requirements ? m.requirements.map(r => `
+                    <div class="p-2 rounded bg-[var(--bg)] border border-[var(--border)] text-[11px]">
+                      <div>• ${r.text}</div>
+                      <div class="text-[9px] font-mono text-[var(--text-muted)] mt-0.5">Ref: ${r.cite}</div>
+                    </div>
+                  `).join('') : ''}
+                </div>
+                <div class="pt-2 flex justify-end">
+                  <button onclick="selectWikiPage('${m.pageId}'); switchWikiTab('content');" class="px-3 py-1 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 text-[11px] font-medium transition">
+                    📖 Buka Detail di Wiki KB →
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function exportJSON() {
+      const data = {
+        wiki_pages: wikiPages,
+        master_clauses: MASTER_CLAUSES,
+        export_date: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'winr-wiki-5-standar-complete.json';
+      a.click();
+      showToast('Berhasil mengekspor backup JSON.', 'success');
+    }
+
+    async function autoSave() {
+      await StorageManager.save('appState', { key: 'state', value: state });
+      await StorageManager.save('appState', { key: 'wiki_pages', value: wikiPages });
+      await StorageManager.save('appState', { key: 'conversations', value: conversations });
+    }
+
+    /* ==========================================================
+     * INITIALIZATION
+     * ========================================================== */
+    async function initApp() {
+      await StorageManager.init();
+
+      // Load saved wiki pages or generate from master
+      const savedPages = await StorageManager.get('appState', 'wiki_pages');
+      if (savedPages && Array.isArray(savedPages) && savedPages.length > 0) {
+        wikiPages = savedPages;
+      } else {
+        wikiPages = generateWikiPagesFromMaster();
+      }
+
+      // Load reference PDFs
+      const savedPdfs = await StorageManager.getAll('pdfDocuments');
+      if (savedPdfs && savedPdfs.length > 0) {
+        referencePdfs = savedPdfs;
+      }
+
+      // Load saved conversations
+      const savedConvs = await StorageManager.get('appState', 'conversations');
+      if (savedConvs && Array.isArray(savedConvs) && savedConvs.length > 0) {
+        conversations = savedConvs;
+        currentConvId = conversations[0].id;
+      } else {
+        createNewChat();
+      }
+
+      const restored = autoRestoreMissingClauses();
+      if (restored > 0) {
+        showToast(`🔄 Auto-restore: ${restored} klausul dikembalikan.`, 'success');
+      }
+
+      updateQABadge();
+      renderConvList();
+      renderChatMessages();
+      switchWikiTab('pages');
+
+      // Keyboard shortcuts
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('chatInput').focus();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+          e.preventDefault();
+          toggleKB();
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
